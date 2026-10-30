@@ -334,8 +334,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     }
     const dist = Math.hypot(tx - head.x, ty - head.y);
     const want = Math.atan2(ty - head.y, tx - head.x);
-    c.heading += Math.max(-c.turn * dt, Math.min(c.turn * dt, wrap(want - c.heading)));
-    const vWant = c.speed * params.drive * Math.min(1, dist / 80);
+    // no hairpin turns: the head can't turn tighter than a circle about a third of the body length,
+    // so to reverse it swings round in a wide arc instead of folding back over itself
+    const minRadius = c.segments * c.spacing * 0.35;
+    const turnLimit = Math.min(c.turn, Math.max(0.5, c.v / minRadius));
+    const off = wrap(want - c.heading);
+    c.heading += Math.max(-turnLimit * dt, Math.min(turnLimit * dt, off));
+    // keep walking while it comes round, rather than stopping on the spot when the target is behind
+    const vWant = c.speed * params.drive * Math.max(Math.min(1, dist / 80), Math.abs(off) > 1.2 ? 0.6 : 0);
     c.v += (vWant - c.v) * Math.min(1, dt * 3);
     head.x += Math.cos(c.heading) * c.v * dt;
     head.y += Math.sin(c.heading) * c.v * dt;
@@ -380,12 +386,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       // house-centipede fan: legs lengthen toward the tail, front ones reach forward, rear ones sweep back,
       // and the last pair trails far behind like a second set of antennae
       const t = (L.seg - 1) / Math.max(1, c.segments - 1), last = L.seg === c.segments;
-      L.scale = last ? 2.3 : 0.85 + 0.8 * t;
-      const fan = last ? -1.25 : 0.65 - 1.35 * t;  // radians from straight out; positive is forward
+      L.scale = last ? 1.5 : 0.85 + 0.55 * t;
+      const fan = last ? -0.9 : 0.6 - 1.05 * t;  // radians from straight out; positive is forward
       const fx = Math.cos(ang), fy = Math.sin(ang);
       const dirx = nx * Math.cos(fan) + fx * Math.sin(fan), diry = ny * Math.cos(fan) + fy * Math.sin(fan);
       const reach = (c.legA + c.legB) * 1.5 * L.scale * 0.8;
-      const swing = last ? 0.15 : 0.45;  // the trailing pair barely steps
+      const swing = last ? 0.25 : 0.45;  // the trailing pair takes short steps
       const home = { x: L.hip.x + dirx * reach + fx * c.stride * swing, y: L.hip.y + diry * reach + fy * c.stride * swing };
       const stance = L.phase >= Math.PI;
       if (!L.foot) L.foot = { ...home };
@@ -431,12 +437,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
       }
     }
     const j = L.joints;
+    const dx = L.foot.x - L.hip.x, dy = L.foot.y - L.hip.y, d = Math.hypot(dx, dy);
+    // pole: push the knee sideways off the hip-to-foot line, on the side away from the body,
+    // so forward, sideways and swept-back legs all bend the same way
+    let px = -dy / (d || 1), py = dx / (d || 1);
+    if (px * L.out.x + py * L.out.y < 0) { px = -px; py = -py; }
     const POLE = [0, 1.0, 3.2, 2.4, 0.8, 0];  // the raised knee sits at the femur-tibia joint
     for (let i = 1; i < n; i++) {
       const k = POLE[i] || 0;
-      j[i].x += (L.out.x + L.out.fx * 0.35) * k; j[i].y += (L.out.y + L.out.fy * 0.35) * k;
+      j[i].x += px * k; j[i].y += py * k;
     }
-    const dx = L.foot.x - L.hip.x, dy = L.foot.y - L.hip.y, d = Math.hypot(dx, dy);
     const goal = d > reach * 0.999 ? { x: L.hip.x + dx / d * reach * 0.999, y: L.hip.y + dy / d * reach * 0.999 } : L.foot;
     const place = (from, to, len) => {
       const ex = to.x - from.x, ey = to.y - from.y, e = Math.hypot(ex, ey) || 1e-6;
