@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A many-legged creature whose gait emerges from coupled leg oscillators with ground feedback. It follows your pointer and wears a trail into the text it walks over.">
+<meta name="description" content="A many-legged creature crawls through a Slack channel, wearing a trail into the messages it walks over and posting what it read.">
 <title>Crawler Field Notes</title>
 <meta name="theme-color" content="#050608">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -76,8 +76,20 @@ article p { margin: 0 0 8px; max-width: 110ch; text-align: justify; hyphens: aut
 button { font: 500 13px/1 var(--mono); padding: 9px 12px; border-radius: 4px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; }
 button.primary { background: var(--ink); color: var(--paper); }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#log { border-top: 1px solid var(--rule); margin-top: 28px; }
-#log p { font-style: italic; color: var(--muted); }
+.chan { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 0 10px; border-bottom: 1px solid var(--rule); margin-bottom: 6px; font: 13px/1.4 var(--mono); }
+.chan b { color: var(--ink); font-weight: 500; }
+.chan span { color: var(--muted); }
+.msg { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; padding: 6px 0; }
+.msg p { margin: 0; max-width: 110ch; }
+.meta { font: 12px/1.3 var(--mono); color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 500; margin-right: 6px; }
+.av { width: 32px; height: 32px; border-radius: 6px; background: hsl(var(--h) 55% 32%); position: relative; }
+.av::after { content: ""; position: absolute; inset: 8px; border: 1px solid hsl(var(--h) 80% 70%); }
+.msg.bot .av { background: transparent; border: 1px solid var(--accent); }
+.msg.bot .av::after { border-color: var(--accent); inset: 10px; background: var(--accent); }
+.msg.bot .meta b::after { content: "APP"; margin-left: 6px; padding: 0 4px; font-size: 10px; border-radius: 3px; background: var(--rule); color: var(--muted); }
+.msg.bot p { color: var(--muted); font-style: italic; }
+#log { margin-top: 4px; }
 #log p .seed { font-style: normal; color: var(--accent); font-family: var(--mono); font-size: 13px; }
 </style>
 </head>
@@ -92,26 +104,27 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   </header>
 
   <article id="article">
-    <p>Many-legged animals do not plan each step. A centipede running across a leaf carries dozens of legs, and no single command decides when each one lifts. The rhythm comes from small circuits in the nerve cord called central pattern generators. Each one is an oscillator: it swings between a lifting state and a pushing state on its own, even when the leg is cut away from the body.</p>
-    <p>The oscillators are coupled. A leg tends to move in anti-phase with the leg opposite it, so the animal does not tip, and slightly behind or ahead of the leg in the next segment, so a wave of steps travels along the body. When the coupling is weak the legs wander out of step. When it is strong the wave locks in and the gait becomes regular, like a rowing crew finding the stroke.</p>
-    <h2>Feedback from the ground</h2>
-    <p>Coupling alone is not enough on rough ground. Each leg also listens to its own load. A leg that is carrying a lot of weight stays down a little longer, and a leg that is carrying nothing lifts sooner. Engineers who copy this rule call it Tegotae, a Japanese word for the feeling that an action has landed. With only this local rule, robots switch between walking and running gaits on their own as their speed changes.</p>
-    <p>The same idea explains how a salamander moves from swimming to walking. Its spinal oscillators send a travelling wave down the body. Raise the drive and the wave speeds up; raise it further and the limb oscillators drop out, and the body swims. Nothing in the circuit knows the difference between land and water. The behaviour is a property of the loop between body, circuit and ground.</p>
-    <h2>Reading as crawling</h2>
-    <p>A web crawler is a program that walks from page to page and copies what it finds. It has no eyes and no legs, but it follows the same pattern: a simple rule, repeated, meeting a surface it did not choose. This specimen reads the words under its head as it walks. It keeps a small table of which word tends to follow which, and from time to time it writes new sentences below, stitched from the text it has already crossed.</p>
-    <p>Its notes are not meant to be true. They show what a predictor does when it has seen only a few hundred words: it repeats the patterns of its terrain, recombines them, and drifts. Lead it across different paragraphs and its writing changes with the ground it covered.</p>
-    <h2>Anatomy of a step</h2>
-    <p>Each leg is a chain of short segments: the coxa that joins the body, the trochanter, the femur, the patella, the tibia and the tarsus that meets the ground. The joints between them are hinges, so a leg cannot reach a foothold by one rotation alone. Every joint gives a little, and the chain finds a shape that puts the foot where the rhythm asks while the knee arches up and out, away from the body. In a centipede the last pair is longer than the rest and trails behind like a pair of antennae; in a millipede the legs are short and come in double pairs, so the wave of steps runs along the body like wind over grass.</p>
-    <p>A step has two halves. In the swing the foot leaves the ground, the leg folds and travels forward through the air. In the stance the foot is planted and the leg becomes a strut: the body rolls over it, and the leg sweeps backwards relative to the animal while staying still relative to the ground. The proportion of the cycle spent in stance is the duty factor. A slow walker keeps most feet down at once and rarely tips. A fast runner lifts more feet than it plants, trusts its momentum, and lets the wave of steps sharpen into a ripple that runs down the body faster than the body moves.</p>
-    <h2>Gaits and their names</h2>
-    <p>Insects with six legs often use the tripod gait: the front and back legs of one side move together with the middle leg of the other, so the animal always stands on a triangle. Slower insects switch to a tetrapod gait with four feet down, and the slowest to a wave gait in which a single leg lifts at a time. Myriapods with dozens of legs cannot use named patterns in the same way. Their gaits are described by the wavelength of the step wave, measured in segments, and by its direction: a wave that travels from tail to head is direct, one that travels from head to tail is retrograde. Centipedes tend to use retrograde waves; millipedes, pushing through soil, tend to use direct ones.</p>
-    <p>None of these patterns needs to be stored anywhere. Change the drive to the oscillators and the coupling between them, or change how much a loaded leg resists lifting, and the same circuit slides from one gait into another. The specimen above runs on exactly these three numbers. Turn the coupling down and the wave dissolves into stumbling; turn the ground feedback down and the legs keep rhythm but ignore their load, so the body sags and lurches when it turns.</p>
-    <h2>Traces</h2>
-    <p>Where the specimen walks it leaves marks. Each footfall on a word darkens it, and a word stepped on again darkens further, until a well-travelled path reads like a trail worn through grass. The page keeps a record of the walk that the walker itself cannot read: a map of attention drawn by feet rather than eyes. Lead it in circles and the circle prints itself into the paragraph; let it wander and the trail branches and fades into the parts of the text it never reached.</p>
-    <section id="log" aria-live="polite">
-      <h2>Crawler notes</h2>
-      <p class="hint" id="logEmpty">Nothing written yet. Lead the crawler over the text above; it writes a note after reading about a dozen words.</p>
-    </section>
+    <div class="chan"><b># almost_anything_goes</b> <span>a place for nearly everything</span></div>
+    <div class="msg"><div class="av" style="--h:28"></div><div class="mb"><div class="meta"><b>earwig</b> <time>9:02 AM</time></div><p>halloween emojis are hereeee 👻🧹</p></div></div>
+    <div class="msg"><div class="av" style="--h:205"></div><div class="mb"><div class="meta"><b>cicada</b> <time>9:04 AM</time></div><p>Does anyone have a good recommendation for a comfy desk chair? Emphasis on <em>comfy</em>. My lummmbbaaarr</p></div></div>
+    <div class="msg"><div class="av" style="--h:265"></div><div class="mb"><div class="meta"><b>mayfly</b> <time>11:37 AM</time></div><p>Can a documentary win an Oscar? Currently sitting at 99!</p></div></div>
+    <div class="msg"><div class="av" style="--h:140"></div><div class="mb"><div class="meta"><b>lacewing</b> <time>10:56 AM</time></div><p>If anyone needs something silly to make you smile, it's Fat Bear Week, an annual bracketed daily voting competition to decide which park bear has put on the most weight ahead of hibernation. 🐻 Cracks me up that the bears don't know they're secretly being photographed before and after.</p></div></div>
+    <div class="msg"><div class="av" style="--h:52"></div><div class="mb"><div class="meta"><b>firefly</b> <time>10:35 AM</time></div><p>Y'all this el niño is insane. Threading the needle on hurricanes. Hopefully they keep missing.</p></div></div>
+    <div class="msg"><div class="av" style="--h:330"></div><div class="mb"><div class="meta"><b>weevil</b> <time>6:53 AM</time></div><p>this is how I find out I could take the amtrak to new orleans</p></div></div>
+    <div class="msg"><div class="av" style="--h:265"></div><div class="mb"><div class="meta"><b>mayfly</b> <time>7:40 AM</time></div><p>Just finished The Bear this weekend. Feels like when I finished Succession 😭</p></div></div>
+    <div class="msg"><div class="av" style="--h:52"></div><div class="mb"><div class="meta"><b>firefly</b> <time>3:22 PM</time></div><p>Absolutely loving the new vertical tabs option in chrome!</p></div></div>
+    <div class="msg"><div class="av" style="--h:205"></div><div class="mb"><div class="meta"><b>cicada</b> <time>12:58 PM</time></div><p>I don't think we're in Kansas anymore! Or… maybe we are now? 🌪️🧺👠</p></div></div>
+    <div class="msg"><div class="av" style="--h:330"></div><div class="mb"><div class="meta"><b>weevil</b> <time>10:43 AM</time></div><p>are we a dog cat or Jimothy company</p></div></div>
+    <div class="msg"><div class="av" style="--h:265"></div><div class="mb"><div class="meta"><b>mayfly</b> <time>10:41 AM</time></div><p>Google Jimothy, thank me later.</p></div></div>
+    <div class="msg"><div class="av" style="--h:15"></div><div class="mb"><div class="meta"><b>silverfish</b> <time>10:42 AM</time></div><p>fail..</p></div></div>
+    <div class="msg"><div class="av" style="--h:95"></div><div class="mb"><div class="meta"><b>katydid</b> <time>7:31 AM</time></div><p>Tough choice for me in England vs Argentina. I wish that was the final.</p></div></div>
+    <div class="msg"><div class="av" style="--h:15"></div><div class="mb"><div class="meta"><b>silverfish</b> <time>7:23 PM</time></div><p>No era penal!</p></div></div>
+    <div class="msg"><div class="av" style="--h:15"></div><div class="mb"><div class="meta"><b>silverfish</b> <time>8:05 PM</time></div><p>I'm going to bed. 😭😭😭</p></div></div>
+    <div class="msg"><div class="av" style="--h:185"></div><div class="mb"><div class="meta"><b>stonefly</b> <time>8:36 PM</time></div><p>Same story all my life 😭</p></div></div>
+    <div class="msg"><div class="av" style="--h:185"></div><div class="mb"><div class="meta"><b>stonefly</b> <time>9:47 PM</time></div><p>At least del toro won..</p></div></div>
+    <div class="msg"><div class="av" style="--h:28"></div><div class="mb"><div class="meta"><b>earwig</b> <time>9:55 AM</time></div><p>I don't like the new Meet sounds. Just sayin.</p></div></div>
+    <div class="msg"><div class="av" style="--h:300"></div><div class="mb"><div class="meta"><b>thrips</b> <time>8:34 AM</time></div><p>Modern cars are going the wrong direction with in-car controls, IMO. Giant panoramic touchscreens for everything and removal of tactile feedback in something where you need to pay attention to the road and rely often on touch. Screens for information. Buttons and knobs for control.</p></div></div>
+    <section id="log" aria-live="polite"></section>
   </article>
 
 </div>
@@ -234,10 +247,13 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       out.push(w);
     }
     const sentence = out.join(" ");
-    const p = document.createElement("p");
-    p.innerHTML = `<span class="seed">${recent.slice(-3).join(" ")} →</span> ${sentence.charAt(0).toUpperCase() + sentence.slice(1)}.`;
-    document.getElementById("logEmpty")?.remove();
-    document.getElementById("log").appendChild(p);
+    // the crawler posts its note into the channel as a bot message
+    const now = new Date();
+    const msg = document.createElement("div");
+    msg.className = "msg bot";
+    msg.innerHTML = `<div class="av"></div><div class="mb"><div class="meta"><b>crawler</b> <time>${now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>`
+      + `<p><span class="seed">${recent.slice(-3).join(" ")} →</span> ${sentence.charAt(0).toUpperCase() + sentence.slice(1)}.</p></div>`;
+    document.getElementById("log").appendChild(msg);
     readBuffer = [];
     requestAnimationFrame(resize);
   }
